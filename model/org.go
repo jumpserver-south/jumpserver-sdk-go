@@ -21,10 +21,5 @@ type OrganizationRequest struct {
 	Comment string   `json:"comment,omitempty"`
 }
 
-// OrganizationPage is the paginated list envelope.
-type OrganizationPage struct {
-	Total       int            `json:"count"`
-	NextURL     string         `json:"next"`
-	PreviousURL string         `json:"previous"`
-	Results     []Organization `json:"results"`
-}
+// OrganizationPage is the paginated list envelope for Organizations.
+type OrganizationPage = Page[Organization]

@@ -22,10 +22,5 @@ type LabelRequest struct {
 	Comment string `json:"comment,omitempty"`
 }
 
-// LabelPage is the paginated list envelope.
-type LabelPage struct {
-	Total       int     `json:"count"`
-	NextURL     string  `json:"next"`
-	PreviousURL string  `json:"previous"`
-	Results     []Label `json:"results"`
-}
+// LabelPage is the paginated list envelope for Labels.
+type LabelPage = Page[Label]

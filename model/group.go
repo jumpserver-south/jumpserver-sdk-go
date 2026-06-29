@@ -20,13 +20,8 @@ type GroupRequest struct {
 	Users   []string `json:"users,omitempty"`
 }
 
-// GroupPage is the paginated list envelope.
-type GroupPage struct {
-	Total       int     `json:"count"`
-	NextURL     string  `json:"next"`
-	PreviousURL string  `json:"previous"`
-	Results     []Group `json:"results"`
-}
+// GroupPage is the paginated list envelope for Groups.
+type GroupPage = Page[Group]
 
 // UserGroupRelation binds a user to a group.
 type UserGroupRelation struct {

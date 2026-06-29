@@ -35,13 +35,8 @@ type AccountRequest struct {
 	Comment    string `json:"comment,omitempty"`
 }
 
-// AccountPage is the paginated list envelope.
-type AccountPage struct {
-	Total       int       `json:"count"`
-	NextURL     string    `json:"next"`
-	PreviousURL string    `json:"previous"`
-	Results     []Account `json:"results"`
-}
+// AccountPage is the paginated list envelope for Accounts.
+type AccountPage = Page[Account]
 
 // AccountTemplate is a reusable account credential template.
 type AccountTemplate struct {
@@ -76,13 +71,8 @@ type AccountTemplateRequest struct {
 	Comment    string `json:"comment,omitempty"`
 }
 
-// AccountTemplatePage is the paginated list envelope.
-type AccountTemplatePage struct {
-	Total       int               `json:"count"`
-	NextURL     string            `json:"next"`
-	PreviousURL string            `json:"previous"`
-	Results     []AccountTemplate `json:"results"`
-}
+// AccountTemplatePage is the paginated list envelope for AccountTemplates.
+type AccountTemplatePage = Page[AccountTemplate]
 
 // AccountBulkByTemplateRequest adds accounts to assets using a template.
 type AccountBulkByTemplateRequest struct {
@@ -129,13 +119,8 @@ type ChangeSecretAutomationRequest struct {
 	Comment        string   `json:"comment,omitempty"`
 }
 
-// ChangeSecretAutomationPage is the paginated list envelope.
-type ChangeSecretAutomationPage struct {
-	Total       int                      `json:"count"`
-	NextURL     string                   `json:"next"`
-	PreviousURL string                   `json:"previous"`
-	Results     []ChangeSecretAutomation `json:"results"`
-}
+// ChangeSecretAutomationPage is the paginated list envelope for ChangeSecretAutomations.
+type ChangeSecretAutomationPage = Page[ChangeSecretAutomation]
 
 // AccountBackupPlan represents an account backup schedule.
 type AccountBackupPlan struct {
@@ -175,13 +160,8 @@ type AccountBackupPlanRequest struct {
 	Comment        string   `json:"comment,omitempty"`
 }
 
-// AccountBackupPlanPage is the paginated list envelope.
-type AccountBackupPlanPage struct {
-	Total       int                 `json:"count"`
-	NextURL     string              `json:"next"`
-	PreviousURL string              `json:"previous"`
-	Results     []AccountBackupPlan `json:"results"`
-}
+// AccountBackupPlanPage is the paginated list envelope for AccountBackupPlans.
+type AccountBackupPlanPage = Page[AccountBackupPlan]
 
 // AccountVerifyResult is the result of an account connectivity check (v4).
 type AccountVerifyResult struct {

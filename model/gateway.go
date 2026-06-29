@@ -28,10 +28,5 @@ type GatewayRequest struct {
 	Comment   string     `json:"comment,omitempty"`
 }
 
-// GatewayPage is the paginated list envelope.
-type GatewayPage struct {
-	Total       int       `json:"count"`
-	NextURL     string    `json:"next"`
-	PreviousURL string    `json:"previous"`
-	Results     []Gateway `json:"results"`
-}
+// GatewayPage is the paginated list envelope for Gateways.
+type GatewayPage = Page[Gateway]

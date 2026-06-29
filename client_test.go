@@ -27,9 +27,6 @@ func newTestClient(t *testing.T, srv *httptest.Server) *Client {
 
 func TestNewClientDefaults(t *testing.T) {
 	c := NewClient(WithBaseURL("https://example.com"))
-	if c.Version() != string(JumpServerV4) {
-		t.Errorf("expected v4 default, got %v", c.Version())
-	}
 	if c.baseURL.String() != "https://example.com" {
 		t.Errorf("unexpected base URL: %s", c.baseURL.String())
 	}
@@ -275,42 +272,7 @@ func TestDoRaw_StreamsBinary(t *testing.T) {
 
 var _ io.Writer = (*bytes.Buffer)(nil)
 
-func TestV3AuthEndpoint(t *testing.T) {
-	var seenPath string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		seenPath = r.URL.Path
-		w.WriteHeader(http.StatusCreated)
-		_ = json.NewEncoder(w).Encode(model.Token{Token: "v3-token", User: "alice"})
-	}))
-	defer srv.Close()
-
-	c := NewClient(
-		WithBaseURL(srv.URL),
-		WithHTTPClient(srv.Client()),
-		WithVersion(JumpServerV3),
-		WithInsecureSkipVerify(true),
-	)
-
-	if c.Version() != string(JumpServerV3) {
-		t.Errorf("expected v3, got %s", c.Version())
-	}
-
-	tok, _, err := c.Auth.CreateToken(context.Background(), &model.TokenRequest{
-		Username: "alice",
-		Password: "secret",
-	})
-	if err != nil {
-		t.Fatalf("err: %v", err)
-	}
-	if tok.Token != "v3-token" {
-		t.Errorf("unexpected token: %s", tok.Token)
-	}
-	if seenPath != "/api/v1/authentication/auth/" {
-		t.Errorf("expected v3 auth path, got %s", seenPath)
-	}
-}
-
-func TestV4AuthEndpoint(t *testing.T) {
+func TestAuthEndpoint(t *testing.T) {
 	var seenPath string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		seenPath = r.URL.Path
@@ -322,7 +284,6 @@ func TestV4AuthEndpoint(t *testing.T) {
 	c := NewClient(
 		WithBaseURL(srv.URL),
 		WithHTTPClient(srv.Client()),
-		WithVersion(JumpServerV4),
 		WithInsecureSkipVerify(true),
 	)
 
@@ -337,7 +298,7 @@ func TestV4AuthEndpoint(t *testing.T) {
 		t.Errorf("unexpected token: %s", tok.Token)
 	}
 	if seenPath != "/api/v1/authentication/tokens/" {
-		t.Errorf("expected v4 auth path, got %s", seenPath)
+		t.Errorf("expected tokens path, got %s", seenPath)
 	}
 }
 

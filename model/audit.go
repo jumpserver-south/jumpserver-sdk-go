@@ -17,13 +17,20 @@ type Session struct {
 	DateEnd       string `json:"date_end"`
 }
 
-// SessionPage is the paginated list envelope.
-type SessionPage struct {
-	Total       int       `json:"count"`
-	NextURL     string    `json:"next"`
-	PreviousURL string    `json:"previous"`
-	Results     []Session `json:"results"`
-}
+// SessionPage is the paginated list envelope for Sessions.
+type SessionPage = Page[Session]
+
+// CommandPage is the paginated list envelope for Commands.
+type CommandPage = Page[Command]
+
+// FTPLogPage is the paginated list envelope for FTPLogs.
+type FTPLogPage = Page[FTPLog]
+
+// LoginLogPage is the paginated list envelope for LoginLogs.
+type LoginLogPage = Page[LoginLog]
+
+// OperateLogPage is the paginated list envelope for OperateLogs.
+type OperateLogPage = Page[OperateLog]
 
 // Command is a recorded command in a session.
 type Command struct {
@@ -37,14 +44,6 @@ type Command struct {
 	RiskLevel int    `json:"risk_level"`
 	OrgID     string `json:"org_id"`
 	Timestamp int64  `json:"timestamp"`
-}
-
-// CommandPage is the paginated list envelope.
-type CommandPage struct {
-	Total       int       `json:"count"`
-	NextURL     string    `json:"next"`
-	PreviousURL string    `json:"previous"`
-	Results     []Command `json:"results"`
 }
 
 // FTPLog is a file-transfer audit record.
@@ -62,14 +61,6 @@ type FTPLog struct {
 	DateStart   string `json:"date_start"`
 }
 
-// FTPLogPage is the paginated list envelope.
-type FTPLogPage struct {
-	Total       int      `json:"count"`
-	NextURL     string   `json:"next"`
-	PreviousURL string   `json:"previous"`
-	Results     []FTPLog `json:"results"`
-}
-
 // LoginLog is a user login audit record.
 type LoginLog struct {
 	ID        any    `json:"id"`
@@ -85,14 +76,6 @@ type LoginLog struct {
 	Datetime  string `json:"datetime"`
 }
 
-// LoginLogPage is the paginated list envelope.
-type LoginLogPage struct {
-	Total       int        `json:"count"`
-	NextURL     string     `json:"next"`
-	PreviousURL string     `json:"previous"`
-	Results     []LoginLog `json:"results"`
-}
-
 // OperateLog is an admin operation audit record.
 type OperateLog struct {
 	ID           any        `json:"id"`
@@ -104,10 +87,3 @@ type OperateLog struct {
 	Datetime     string     `json:"datetime"`
 }
 
-// OperateLogPage is the paginated list envelope.
-type OperateLogPage struct {
-	Total       int          `json:"count"`
-	NextURL     string       `json:"next"`
-	PreviousURL string       `json:"previous"`
-	Results     []OperateLog `json:"results"`
-}

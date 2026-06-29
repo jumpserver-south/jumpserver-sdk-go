@@ -14,10 +14,7 @@ const (
 	ZoneDetailURL = "/api/v1/assets/zones/%s/"
 )
 
-// ZonesService handles network zones on v4 and automatically falls
-// back to /api/v1/assets/domains on v3. Callers should always use
-// ZonesService; the correct endpoint is chosen based on the client's
-// configured version.
+// ZonesService handles /api/v1/assets/zones network zones.
 type ZonesService struct {
 	client core.HTTPClient
 }
@@ -27,27 +24,13 @@ func NewZonesService(c core.HTTPClient) *ZonesService {
 	return &ZonesService{client: c}
 }
 
-func (s *ZonesService) listURL() string {
-	if s.client.Version() == core.JumpServerV3.String() {
-		return DomainListURL
-	}
-	return ZoneListURL
-}
-
-func (s *ZonesService) detailURL() string {
-	if s.client.Version() == core.JumpServerV3.String() {	
-		return DomainDetailURL
-	}
-	return ZoneDetailURL
-}
-
-// List returns a paginated list of zones (v4) or domains (v3).
+// List returns a paginated list of zones.
 func (s *ZonesService) List(ctx context.Context, opts *core.ListOptions) ([]model.Zone, *core.Response, error) {
 	params := map[string]string{}
 	if opts != nil {
 		opts.Apply(params)
 	}
-	path := sdkutil.AppendQuery(s.listURL(), params)
+	path := sdkutil.AppendQuery(ZoneListURL, params)
 	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
 	if err != nil {
 		return nil, nil, err
@@ -65,53 +48,22 @@ func (s *ZonesService) List(ctx context.Context, opts *core.ListOptions) ([]mode
 	return page.Results, resp, nil
 }
 
-// Get fetches a zone (v4) or domain (v3) by ID.
+// Get fetches a zone by ID.
 func (s *ZonesService) Get(ctx context.Context, id string) (*model.Zone, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(s.detailURL(), id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Zone
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Zone](ctx, s.client, ZoneDetailURL, id)
 }
 
-// Create creates a zone (v4) or domain (v3).
+// Create creates a zone.
 func (s *ZonesService) Create(ctx context.Context, req *model.ZoneRequest) (*model.Zone, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", s.listURL(), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Zone
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.Zone, model.ZoneRequest](ctx, s.client, ZoneListURL, req)
 }
 
-// Update patches a zone (v4) or domain (v3).
+// Update patches a zone.
 func (s *ZonesService) Update(ctx context.Context, id string, req *model.ZoneRequest) (*model.Zone, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PATCH", sdkutil.Spath(s.detailURL(), id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Zone
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Update[model.Zone, model.ZoneRequest](ctx, s.client, ZoneDetailURL, id, req)
 }
 
-// Delete deletes a zone (v4) or domain (v3) by ID.
+// Delete deletes a zone by ID.
 func (s *ZonesService) Delete(ctx context.Context, id string) (*core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "DELETE", sdkutil.Spath(s.detailURL(), id), nil)
-	if err != nil {
-		return nil, err
-	}
-	return s.client.Do(ctx, httpReq, nil)
+	return sdkutil.Delete(ctx, s.client, ZoneDetailURL, id)
 }

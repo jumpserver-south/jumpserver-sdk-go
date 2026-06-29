@@ -47,31 +47,30 @@ type AssetWebScript struct {
 	Script any    `json:"script"`
 }
 
-// Asset is a generic JumpServer asset. The Domain field is populated on
-// v3 responses; Zone is used on v4 responses. Both use any to handle
-// the various shapes the API may return (object, string, or null).
+// Asset is a generic JumpServer asset. Zone holds the network zone ID/name
+// returned by the v4 API. Both use any to handle the various shapes the
+// API may return (object, string, or null).
 type Asset struct {
-	ID           string        `json:"id"`
-	Name         string        `json:"name"`
-	Address      string        `json:"address"`
-	Comment      string        `json:"comment"`
-	Domain       any           `json:"domain,omitempty"`
-	Zone         any           `json:"zone,omitempty"`
-	Platform     PlatformMini  `json:"platform"`
-	Nodes        IDNameList    `json:"nodes"`
-	Labels       []any         `json:"labels"`
-	Protocols    []any         `json:"protocols"`
-	NodesDisplay []string      `json:"nodes_display"`
-	Category     LabelValue    `json:"category"`
-	Type         LabelValue    `json:"type"`
-	Connectivity any           `json:"connectivity"`
-	CreatedBy    string        `json:"created_by"`
-	OrgID        string        `json:"org_id"`
-	OrgName      string        `json:"org_name"`
-	IsActive     bool          `json:"is_active"`
-	DateVerified string        `json:"date_verified"`
-	DateCreated  string        `json:"date_created"`
-	SpecInfo     any           `json:"spec_info"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Address      string       `json:"address"`
+	Comment      string       `json:"comment"`
+	Zone         any          `json:"zone,omitempty"`
+	Platform     PlatformMini `json:"platform"`
+	Nodes        IDNameList   `json:"nodes"`
+	Labels       []any        `json:"labels"`
+	Protocols    []any        `json:"protocols"`
+	NodesDisplay []string     `json:"nodes_display"`
+	Category     LabelValue   `json:"category"`
+	Type         LabelValue   `json:"type"`
+	Connectivity any          `json:"connectivity"`
+	CreatedBy    string       `json:"created_by"`
+	OrgID        string       `json:"org_id"`
+	OrgName      string       `json:"org_name"`
+	IsActive     bool         `json:"is_active"`
+	DateVerified string       `json:"date_verified"`
+	DateCreated  string       `json:"date_created"`
+	SpecInfo     any          `json:"spec_info"`
 }
 
 // GetCategory returns the typed asset category.
@@ -82,18 +81,13 @@ func (a Asset) GetCategory() AssetCategory {
 	return AssetCategory(fmt.Sprintf("%ss", a.Category.Value))
 }
 
-// GetDomainOrZone returns a description of the domain/zone field,
-// whichever is present. Returns nil if neither is set.
-func (a Asset) GetDomainOrZone() any {
-	if a.Zone != nil {
-		return a.Zone
-	}
-	return a.Domain
+// GetZone returns the zone field, or nil if not set.
+func (a Asset) GetZone() any {
+	return a.Zone
 }
 
-// AssetRequest is the create/update payload. Set Zone for v4 or Domain
-// for v3. When both are set, the service layer picks the right one
-// based on the client version.
+// AssetRequest is the create/update payload. Set Zone to the target
+// network zone ID.
 type AssetRequest struct {
 	ID        string        `json:"id,omitempty"`
 	Name      string        `json:"name"`
@@ -102,17 +96,11 @@ type AssetRequest struct {
 	Protocols []NamePort    `json:"protocols,omitempty"`
 	Nodes     []string      `json:"nodes,omitempty"`
 	Labels    []string      `json:"labels,omitempty"`
-	Domain    string        `json:"domain,omitempty"`
 	Zone      string        `json:"zone,omitempty"`
 	IsActive  bool          `json:"is_active,omitempty"`
 	Comment   string        `json:"comment,omitempty"`
 	SpecInfo  AssetSpecInfo `json:"spec_info,omitempty"`
 }
 
-// AssetPage is the paginated list envelope.
-type AssetPage struct {
-	Total       int     `json:"count"`
-	NextURL     string  `json:"next"`
-	PreviousURL string  `json:"previous"`
-	Results     []Asset `json:"results"`
-}
+// AssetPage is the paginated list envelope for Assets.
+type AssetPage = Page[Asset]

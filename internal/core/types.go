@@ -7,28 +7,12 @@ import (
 	"strconv"
 )
 
-// APIVersion describes which JumpServer major version the client should
-// target. Some endpoints exist only on v4+.
-type APIVersion string
-
-const (
-	// JumpServerV3 targets JumpServer 3.10.x.
-	JumpServerV3 APIVersion = "3"
-	// JumpServerV4 targets JumpServer 4.10.x (default).
-	JumpServerV4 APIVersion = "4"
-)
-
-func (v APIVersion) String() string {
-	return string(v)
-}
-
 // HTTPClient is the interface that service sub-packages use to make
 // HTTP requests. The root *Client satisfies this interface.
 type HTTPClient interface {
 	NewRequest(ctx context.Context, method, path string, body any) (*http.Request, error)
 	Do(ctx context.Context, req *http.Request, v any) (*Response, error)
 	DoRaw(ctx context.Context, req *http.Request, w io.Writer) (*Response, error)
-	Version() string
 }
 
 // Response is the typed wrapper returned by every service call. It
@@ -87,6 +71,16 @@ func (o *ListOptions) Next() *ListOptions {
 	next := *o
 	next.Offset += next.Limit
 	return &next
+}
+
+// Page is a generic paginated list envelope matching JumpServer's
+// {count, next, previous, results} shape. It is used internally by
+// the crud helpers to decode list responses generically.
+type Page[T any] struct {
+	Total       int    `json:"count"`
+	NextURL     string `json:"next"`
+	PreviousURL string `json:"previous"`
+	Results     []T    `json:"results"`
 }
 
 // PageFetcher paginates through all pages of a list endpoint.

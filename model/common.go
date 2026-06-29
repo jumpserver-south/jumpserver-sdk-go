@@ -1,5 +1,15 @@
 package model
 
+// Page is a generic paginated list envelope matching JumpServer's
+// {count, next, previous, results} shape. All *Page types in this
+// package are now aliases to this generic type.
+type Page[T any] struct {
+	Total       int    `json:"count"`
+	NextURL     string `json:"next"`
+	PreviousURL string `json:"previous"`
+	Results     []T    `json:"results"`
+}
+
 // IDName is a compact (id, name) pair used throughout JumpServer for
 // foreign-key references.
 type IDName struct {

@@ -1,21 +1,22 @@
+[中文文档](README_CN.md)
+
 # jumpserver-sdk-go
 
-Go SDK for [JumpServer](https://www.jumpserver.org/) REST API,同时兼容 **v3.10.x** 和 **v4.10.x**。
+Go SDK for [JumpServer](https://www.jumpserver.org/) REST API, targeting **v4.10.x**.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jumpserver-south/jumpserver-sdk-go.svg)](https://pkg.go.dev/github.com/jumpserver-south/jumpserver-sdk-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jumpserver-south/jumpserver-sdk-go)](https://goreportcard.com/report/github.com/jumpserver-south/jumpserver-sdk-go)
 
 ## Features
 
-- **v3 / v4 双版本兼容** — 通过 `WithVersion()` 指定目标版本，SDK 自动选择正确的 API 端点和字段名（如 v3 `domain` ↔ v4 `zone`）
-- **完整 CRUD 覆盖** — 26 个服务模块，涵盖用户、资产、账号、权限、审计、工单等全部核心功能
-- **分类资产支持** — Hosts、Devices、Databases、Webs、Clouds、Customs 六大资产类别独立操作
-- **多种认证方式** — AccessKey (HMAC-SHA256)、Bearer Token、Private Token、HTTP Basic、自定义 Authenticator
-- **组织作用域** — `WithOrgScope(id)` 切换组织上下文，无需重建 Client
-- **自动分页** — `WalkPages()` 函数自动遍历所有分页
-- **智能重试** — 指数退避 + 全抖动，仅重试瞬态错误（timeout、connection reset、429/5xx），永久错误不重试
-- **零第三方依赖** — 纯标准库实现
-- **Go 1.25** — 使用 `math/rand/v2`、`maps.Clone`、`for range int` 等新特性
+- **Full CRUD coverage** — 26 service modules covering users, assets, accounts, permissions, audits, tickets, and more
+- **Typed asset categories** — Hosts, Devices, Databases, Webs, Clouds, Customs each with dedicated CRUD operations
+- **Multiple auth methods** — AccessKey (HMAC-SHA256), Bearer Token, Private Token, HTTP Basic, custom Authenticator
+- **Organization scope** — `WithOrgScope(id)` switches org context without rebuilding the client
+- **Auto pagination** — `WalkPages()` iterates through all pages automatically
+- **Smart retry** — Exponential backoff with full jitter, retries only transient errors (timeout, connection reset, 429/5xx)
+- **Zero third-party dependencies** — pure standard library
+- **Go 1.25** — uses `math/rand/v2`, `maps.Clone`, `for range int`, and other modern features
 
 ## Installation
 
@@ -45,12 +46,11 @@ func main() {
             os.Getenv("JUMPSERVER_KEY_ID"),
             os.Getenv("JUMPSERVER_SECRET_ID"),
         ),
-        jumpserver.WithVersion(jumpserver.JumpServerV4), // 或 JumpServerV3
     )
 
     ctx := context.Background()
 
-    // 列出用户
+    // List users
     users, _, err := client.Users.List(ctx, nil, &jumpserver.ListOptions{Limit: 20})
     if err != nil {
         log.Fatal(err)
@@ -59,17 +59,17 @@ func main() {
         fmt.Println(u.Username, u.Email)
     }
 
-    // 按条件过滤
+    // Filter by condition
     users, _, _ = client.Users.List(ctx,
         map[string]string{"username": "admin"},
         &jumpserver.ListOptions{Limit: 10},
     )
 
-    // 创建主机资产
+    // Create a host asset
     host, _, _ := client.Hosts.Create(ctx, &model.AssetRequest{
         Name:      "web-01",
         Address:   "192.168.1.10",
-        Platform:  1, // Linux 平台 ID
+        Platform:  1, // Linux platform ID
         Protocols: []model.NamePort{{Name: "ssh", Port: 22}},
     })
     fmt.Println("Created:", host.ID)
@@ -79,7 +79,7 @@ func main() {
 ## Authentication
 
 ```go
-// AccessKey HMAC-SHA256 签名（推荐，用于服务账号）
+// AccessKey HMAC-SHA256 signature (recommended for service accounts)
 jumpserver.WithAccessKeyAuth(keyID, secretID)
 
 // Bearer Token
@@ -91,55 +91,23 @@ jumpserver.WithPrivateToken(token)
 // HTTP Basic
 jumpserver.WithBasicAuth(username, password)
 
-// 自定义认证器
+// Custom authenticator
 jumpserver.WithAuthenticator(myAuth)
-```
-
-## Version Awareness
-
-SDK 根据指定版本自动适配 API 差异：
-
-```go
-// v3 客户端 — CreateToken 调用 /api/v1/authentication/auth/
-v3Client := jumpserver.NewClient(
-    jumpserver.WithBaseURL(url),
-    jumpserver.WithAccessKeyAuth(key, secret),
-    jumpserver.WithVersion(jumpserver.JumpServerV3),
-)
-
-// v4 客户端 — CreateToken 调用 /api/v1/authentication/tokens/
-v4Client := jumpserver.NewClient(
-    jumpserver.WithBaseURL(url),
-    jumpserver.WithAccessKeyAuth(key, secret),
-    jumpserver.WithVersion(jumpserver.JumpServerV4),
-)
-
-// v4 资产请求中设置 Domain 会自动映射为 Zone
-v4Client.Hosts.Create(ctx, &model.AssetRequest{
-    Name:   "web-01",
-    Domain: "zone-id", // 自动转为 Zone 字段
-})
-
-// client.Zones 根据版本自动选择端点：
-//   v3 -> /api/v1/assets/domains/  (网域)
-//   v4 -> /api/v1/assets/zones/    (区域)
-zones, _, _ := client.Zones.List(ctx, nil)
-client.Zones.Create(ctx, &model.ZoneRequest{Name: "dmz"})
 ```
 
 ## Organization Scope
 
-JumpServer 的多端点通过组织路由。默认发送 `X-JMS-ORG: ROOT`。
+JumpServer routes most endpoints through organizations. The default header is `X-JMS-ORG: ROOT`.
 
 ```go
-// 设置默认组织
+// Set default organization
 client := jumpserver.NewClient(
     jumpserver.WithBaseURL(url),
     jumpserver.WithOrg("org-uuid"),
     // ...
 )
 
-// 派生一个作用域客户端（共享底层 HTTP 连接）
+// Derive a scoped client (shares underlying HTTP connection)
 scoped := client.WithOrgScope("other-org-uuid")
 users, _, _ := scoped.Users.List(ctx, nil, nil)
 ```
@@ -147,17 +115,17 @@ users, _, _ := scoped.Users.List(ctx, nil, nil)
 ## Pagination
 
 ```go
-// 手动分页
+// Manual pagination
 users, resp, _ := client.Users.List(ctx, nil, &jumpserver.ListOptions{
     Limit:  20,
     Offset: 0,
     Search: "admin",
 })
 if resp.HasNextPage() {
-    // 获取下一页...
+    // fetch next page...
 }
 
-// 自动遍历所有页
+// Auto-iterate all pages
 var all []model.User
 jumpserver.WalkPages(ctx, &jumpserver.ListOptions{Limit: 100}, 0,
     func(ctx context.Context, opts *jumpserver.ListOptions) (*jumpserver.Response, error) {
@@ -174,7 +142,6 @@ jumpserver.WalkPages(ctx, &jumpserver.ListOptions{Limit: 100}, 0,
 ```go
 user, _, err := client.Users.Get(ctx, id)
 if err != nil {
-    // 按状态码判断
     if jumpserver.IsNotFound(err) {
         fmt.Println("user not found")
     }
@@ -185,7 +152,6 @@ if err != nil {
         fmt.Println("rate limited")
     }
 
-    // 获取详细信息
     var apiErr *jumpserver.APIError
     if errors.As(err, &apiErr) {
         fmt.Println(apiErr.StatusCode, apiErr.Message, string(apiErr.Body))
@@ -195,7 +161,7 @@ if err != nil {
 
 ## Retry
 
-默认开启 3 次重试，指数退避 + 全抖动，遵守 `Retry-After` 响应头：
+Default: 3 retries with exponential backoff and full jitter, respects `Retry-After` header:
 
 ```go
 client := jumpserver.NewClient(
@@ -205,92 +171,91 @@ client := jumpserver.NewClient(
 )
 ```
 
-**重试条件**：
-- HTTP 408、429、500、502、503、504
-- 瞬态网络错误（timeout、connection reset、DNS 临时故障）
+**Retried:**
+- HTTP 408, 429, 500, 502, 503, 504
+- Transient network errors (timeout, connection reset, temporary DNS failure)
 
-**不重试**：
+**Not retried:**
 - `context.Canceled` / `context.DeadlineExceeded`
-- TLS 证书错误
-- 4xx 客户端错误（除 408、429）
+- TLS certificate errors
+- 4xx client errors (except 408, 429)
 
 ## Services
 
-| 服务 | 字段 | 说明 |
-|------|------|------|
-| 认证 | `client.Auth` | 登录、MFA、连接令牌、SSO |
-| 用户 | `client.Users` | 用户 CRUD、Profile |
-| 用户组 | `client.UserGroups` | 用户组 CRUD、成员管理 |
-| 角色 | `client.Roles` | 组织/系统角色查询 |
-| 资产 (通用) | `client.Assets` | 通用资产查询、授权用户 |
-| 主机 | `client.Hosts` | 主机 CRUD |
-| 网络设备 | `client.Devices` | 网络设备 CRUD |
-| 数据库 | `client.Databases` | 数据库 CRUD |
-| Web | `client.Webs` | Web 资产 CRUD |
-| 云 | `client.Clouds` | 云资产 CRUD |
-| 自定义 | `client.Customs` | 自定义资产 CRUD |
-| 节点 | `client.Nodes` | 资产树节点 CRUD |
-| 平台 | `client.Platforms` | 平台模板查询 |
-| 网域 (v3) | `client.Domains` | 网域 CRUD（仅 v3 直接访问） |
-| 区域 (v3/v4 自动) | `client.Zones` | 区域 CRUD，v3 自动切换为网域端点 |
-| 网关 | `client.Gateways` | 网关 CRUD |
-| 标签 | `client.Labels` | 标签 CRUD |
-| 账号 | `client.Accounts` | 账号 CRUD、连接性测试 |
-| 账号模板 | `client.AccountTemplates` | 账号模板 CRUD |
-| 改密自动化 | `client.ChangeSecrets` | 改密策略 CRUD + 执行 |
-| 账号备份 | `client.AccountBackups` | 备份计划 CRUD + 执行 |
-| 组织 | `client.Organizations` | 组织 CRUD |
-| 权限 | `client.Permissions` | 资产授权 CRUD |
-| 命令过滤 | `client.CommandFilters` | 命令过滤 + 命令组 CRUD |
-| 登录 ACL | `client.LoginACLs` | 登录 ACL 查询 |
-| 审计 | `client.Audits` | 会话、命令、FTP、登录、操作日志 |
-| 终端 | `client.Terminal` | 终端配置、连接方式 |
-| 工单 | `client.Tickets` | 工单 + 流程管理 |
-| 设置 | `client.Settings` | 系统设置查询 |
-| 企业版 | `client.Xpack` | License 查询 |
+| Service | Field | Description |
+|---------|-------|-------------|
+| Auth | `client.Auth` | Login, MFA, connection tokens, SSO |
+| Users | `client.Users` | User CRUD, Profile |
+| User Groups | `client.UserGroups` | Group CRUD, member management |
+| Roles | `client.Roles` | Org/system role queries |
+| Assets (generic) | `client.Assets` | Generic asset queries, permission users |
+| Hosts | `client.Hosts` | Host CRUD |
+| Devices | `client.Devices` | Network device CRUD |
+| Databases | `client.Databases` | Database CRUD |
+| Webs | `client.Webs` | Web asset CRUD |
+| Clouds | `client.Clouds` | Cloud asset CRUD |
+| Customs | `client.Customs` | Custom asset CRUD |
+| Nodes | `client.Nodes` | Asset tree node CRUD |
+| Platforms | `client.Platforms` | Platform template queries |
+| Zones | `client.Zones` | Network zone CRUD |
+| Gateways | `client.Gateways` | Gateway CRUD |
+| Labels | `client.Labels` | Label CRUD |
+| Accounts | `client.Accounts` | Account CRUD, connectivity tests |
+| Account Templates | `client.AccountTemplates` | Account template CRUD |
+| Change Secrets | `client.ChangeSecrets` | Secret rotation policy CRUD + execute |
+| Account Backups | `client.AccountBackups` | Backup plan CRUD + execute |
+| Organizations | `client.Organizations` | Organization CRUD |
+| Permissions | `client.Permissions` | Asset permission CRUD |
+| Command Filters | `client.CommandFilters` | Command filter + command group CRUD |
+| Login ACL | `client.LoginACLs` | Login ACL queries |
+| Audits | `client.Audits` | Sessions, commands, FTP, login & operation logs |
+| Terminal | `client.Terminal` | Terminal config, connect methods |
+| Tickets | `client.Tickets` | Ticket + workflow management |
+| Settings | `client.Settings` | System setting queries |
+| Enterprise | `client.Xpack` | License queries |
 
 ## Package Structure
 
 ```
 jumpserver-sdk-go/
-├── client.go              # Client, HTTPClient 接口
-├── auth.go                # 认证器实现
-├── options.go             # 函数式配置
-├── errors.go              # APIError, 错误判断辅助函数
+├── client.go              # Client, HTTPClient interface
+├── auth.go                # Authenticator implementations
+├── options.go             # Functional options
+├── errors.go              # APIError, error helpers
 ├── pagination.go          # ListOptions, Response, WalkPages
-├── version.go             # SDK 版本号
-├── client_test.go         # 单元测试
-├── Makefile               # 构建/测试/覆盖率等常用命令
+├── version.go             # SDK version
+├── client_test.go         # Unit tests
+├── Makefile               # Build/test/coverage commands
 │
-├── internal/core/         # 共享类型（HTTPClient 接口、APIVersion）
-├── internal/sdkutil/      # 内部工具函数
-├── model/                 # 数据模型（纯类型定义）
+├── internal/core/         # Shared types (HTTPClient interface)
+├── internal/sdkutil/      # Internal utilities
+├── model/                 # Data models (pure type definitions)
 │
-├── auth/                  # 认证服务（v3/v4 版本感知）
-├── users/                 # 用户 & 用户组（users.go, groups.go）
-├── rbac/                  # 角色
-├── assets/                # 资产/节点/平台/域/区域/网关（7 个文件）
-├── accounts/              # 账号/模板/改密/备份（4 个文件）
-├── orgs/                  # 组织
-├── perms/                 # 权限
-├── acls/                  # 命令过滤 & 登录 ACL
-├── audits/                # 审计日志（sessions, commands, ftplogs, logs）
-├── terminal/              # 终端
-├── tickets/               # 工单
-├── settings/              # 设置
-├── xpack/                 # 企业版
-├── labels/                # 标签
+├── auth/                  # Authentication service
+├── users/                 # Users & groups (users.go, groups.go)
+├── rbac/                  # Roles
+├── assets/                # Assets/nodes/platforms/zones/gateways (7 files)
+├── accounts/              # Accounts/templates/backup/change-secret (4 files)
+├── orgs/                  # Organizations
+├── perms/                 # Permissions
+├── acls/                  # Command filters & login ACLs
+├── audits/                # Audit logs (sessions, commands, ftplogs, logs)
+├── terminal/              # Terminal
+├── tickets/               # Tickets
+├── settings/              # Settings
+├── xpack/                 # Enterprise
+├── labels/                # Labels
 │
 └── examples/
-    ├── integration/       # 完整 CRUD 集成测试（200+ 项）
+    ├── integration/       # Full CRUD integration test (200+ items)
     ├── list-users/
     ├── create-asset/
-    └── connection-token/  # 连接令牌完整流程
+    └── connection-token/  # Connection token full flow
 ```
 
 ## Integration Test
 
-使用真实 JumpServer 实例运行全量 CRUD 测试：
+Run the full CRUD test suite against a real JumpServer instance:
 
 ```bash
 export JUMPSERVER_URL=https://your-jumpserver.example.com
@@ -298,19 +263,19 @@ export JUMPSERVER_KEY_ID=your-key-id
 export JUMPSERVER_SECRET_ID=your-secret-id
 
 make integration
-# 或直接运行
+# or directly
 go run ./examples/integration
 ```
 
 ## Development
 
 ```bash
-make build       # 编译所有包
-make test        # 运行单元测试
-make vet         # 静态检查
+make build       # Build all packages
+make test        # Run unit tests
+make vet         # Static analysis
 make all         # vet + test + build
-make coverage    # 生成测试覆盖率报告
-make clean       # 清理编译产物
+make coverage    # Generate test coverage report
+make clean       # Clean build artifacts
 ```
 
 ## Unit Test

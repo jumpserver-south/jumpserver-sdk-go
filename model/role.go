@@ -12,10 +12,5 @@ type Role struct {
 	DateUpdated string     `json:"date_updated"`
 }
 
-// RolePage is the paginated list envelope.
-type RolePage struct {
-	Total       int    `json:"count"`
-	NextURL     string `json:"next"`
-	PreviousURL string `json:"previous"`
-	Results     []Role `json:"results"`
-}
+// RolePage is the paginated list envelope for Roles.
+type RolePage = Page[Role]

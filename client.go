@@ -51,7 +51,6 @@ type Client struct {
 	cookies    map[string]string
 	userAgent  string
 	orgID      string
-	version    APIVersion
 
 	maxRetries   int
 	retryMinWait time.Duration
@@ -73,9 +72,7 @@ type Client struct {
 	Customs    *assets.CategoryService
 	Nodes      *assets.NodesService
 	Platforms  *assets.PlatformsService
-	// Deprecated: Use Zones service instead.
-	Domains          *assets.DomainsService
-	Zones            *assets.ZonesService
+	Zones      *assets.ZonesService
 	Gateways         *assets.GatewaysService
 	Labels           *labels.Service
 	Accounts         *accounts.Service
@@ -113,7 +110,6 @@ func NewClient(opts ...Option) *Client {
 		cookies:       cfg.cookies,
 		userAgent:     cfg.userAgent,
 		orgID:         cfg.orgID,
-		version:       cfg.version,
 		maxRetries:    cfg.maxRetries,
 		retryMinWait:  cfg.retryMinWait,
 		retryMaxWait:  cfg.retryMaxWait,
@@ -139,7 +135,6 @@ func (c *Client) initServices() {
 	c.Customs = assets.NewCategoryService(c, "custom")
 	c.Nodes = assets.NewNodesService(c)
 	c.Platforms = assets.NewPlatformsService(c)
-	c.Domains = assets.NewDomainsService(c)
 	c.Zones = assets.NewZonesService(c)
 	c.Gateways = assets.NewGatewaysService(c)
 	c.Labels = labels.NewService(c)
@@ -160,9 +155,6 @@ func (c *Client) initServices() {
 
 // BaseURL returns the configured base URL.
 func (c *Client) BaseURL() *url.URL { return c.baseURL }
-
-// Version returns the target JumpServer major version as a string.
-func (c *Client) Version() string { return string(c.version) }
 
 // NewRequest builds an *http.Request against the client's base URL.
 // Body is JSON-encoded when non-nil.

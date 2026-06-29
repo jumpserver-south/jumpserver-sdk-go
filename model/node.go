@@ -18,10 +18,5 @@ type NodeRequest struct {
 	Parent string `json:"parent,omitempty"`
 }
 
-// NodePage is the paginated list envelope.
-type NodePage struct {
-	Total       int    `json:"count"`
-	NextURL     string `json:"next"`
-	PreviousURL string `json:"previous"`
-	Results     []Node `json:"results"`
-}
+// NodePage is the paginated list envelope for Nodes.
+type NodePage = Page[Node]

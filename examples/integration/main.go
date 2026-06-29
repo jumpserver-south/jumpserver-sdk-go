@@ -78,7 +78,6 @@ func main() {
 	client := jumpserver.NewClient(
 		jumpserver.WithBaseURL(url),
 		jumpserver.WithAccessKeyAuth(keyID, secretID),
-		jumpserver.WithVersion(jumpserver.JumpServerV4),
 	)
 	ctx := context.Background()
 	ts := fmt.Sprintf("%d", time.Now().UnixNano()%100000)
@@ -309,18 +308,7 @@ func main() {
 	}
 
 	// ============================================================
-	section("Domains (v3, may 404 on v4)")
-	{
-		domains, _, err := client.Domains.List(ctx, &jumpserver.ListOptions{Limit: 15})
-		if err != nil {
-			skip("Domains.List", "not available on v4")
-		} else {
-			ok(fmt.Sprintf("Domains.List (%d)", len(domains)))
-		}
-	}
-
-	// ============================================================
-	section("Zones (v3=v3 domains, v4=zones) CRUD")
+	section("Zones CRUD")
 	{
 		z, _, err := scoped.Zones.Create(ctx, &model.ZoneRequest{Name: "zone-" + ts})
 		if err != nil {

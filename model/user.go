@@ -111,10 +111,5 @@ type UserRequest struct {
 	Comment            string   `json:"comment,omitempty"`
 }
 
-// UserPage is the paginated list envelope.
-type UserPage struct {
-	Total       int    `json:"count"`
-	NextURL     string `json:"next"`
-	PreviousURL string `json:"previous"`
-	Results     []User `json:"results"`
-}
+// UserPage is the paginated list envelope for Users.
+type UserPage = Page[User]

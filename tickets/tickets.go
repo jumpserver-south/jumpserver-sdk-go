@@ -28,54 +28,17 @@ func NewService(c core.HTTPClient) *Service {
 
 // List returns a paginated list of tickets.
 func (s *Service) List(ctx context.Context, opts *core.ListOptions) ([]model.Ticket, *core.Response, error) {
-	params := map[string]string{}
-	if opts != nil {
-		opts.Apply(params)
-	}
-	path := sdkutil.AppendQuery(ListURL, params)
-	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var page model.TicketPage
-	resp, err := s.client.Do(ctx, httpReq, &page)
-	if err != nil {
-		return nil, resp, err
-	}
-	if resp != nil {
-		resp.Count = page.Total
-		resp.NextURL = page.NextURL
-		resp.PreviousURL = page.PreviousURL
-	}
-	return page.Results, resp, nil
+	return sdkutil.List[model.Ticket](ctx, s.client, ListURL, opts)
 }
 
 // Get fetches a ticket by ID.
 func (s *Service) Get(ctx context.Context, id string) (*model.Ticket, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(DetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Ticket
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Ticket](ctx, s.client, DetailURL, id)
 }
 
 // Create opens an asset-application ticket.
 func (s *Service) Create(ctx context.Context, req *model.TicketRequest) (*model.Ticket, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", ListURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Ticket
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.Ticket, model.TicketRequest](ctx, s.client, ListURL, req)
 }
 
 // Approve approves a ticket with action "approve" or "reject".
@@ -90,38 +53,10 @@ func (s *Service) Approve(ctx context.Context, id, action string) (*core.Respons
 
 // ListFlows returns a paginated list of ticket flows (workflow definitions).
 func (s *Service) ListFlows(ctx context.Context, opts *core.ListOptions) ([]model.TicketFlow, *core.Response, error) {
-	params := map[string]string{}
-	if opts != nil {
-		opts.Apply(params)
-	}
-	path := sdkutil.AppendQuery(FlowListURL, params)
-	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var page model.TicketFlowPage
-	resp, err := s.client.Do(ctx, httpReq, &page)
-	if err != nil {
-		return nil, resp, err
-	}
-	if resp != nil {
-		resp.Count = page.Total
-		resp.NextURL = page.NextURL
-		resp.PreviousURL = page.PreviousURL
-	}
-	return page.Results, resp, nil
+	return sdkutil.List[model.TicketFlow](ctx, s.client, FlowListURL, opts)
 }
 
 // UpdateFlow patches a ticket flow definition.
 func (s *Service) UpdateFlow(ctx context.Context, id string, req *model.TicketFlowRequest) (*model.TicketFlow, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PATCH", sdkutil.Spath(FlowDetailURL, id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.TicketFlow
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Update[model.TicketFlow, model.TicketFlowRequest](ctx, s.client, FlowDetailURL, id, req)
 }

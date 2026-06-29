@@ -39,10 +39,5 @@ type AssetPermissionRequest struct {
 	Comment     string   `json:"comment,omitempty"`
 }
 
-// AssetPermissionPage is the paginated list envelope.
-type AssetPermissionPage struct {
-	Total       int               `json:"count"`
-	NextURL     string            `json:"next"`
-	PreviousURL string            `json:"previous"`
-	Results     []AssetPermission `json:"results"`
-}
+// AssetPermissionPage is the paginated list envelope for AssetPermissions.
+type AssetPermissionPage = Page[AssetPermission]

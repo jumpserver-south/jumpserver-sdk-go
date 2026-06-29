@@ -28,75 +28,25 @@ func NewService(c core.HTTPClient) *Service {
 
 // List returns a paginated list of labels.
 func (s *Service) List(ctx context.Context, opts *core.ListOptions) ([]model.Label, *core.Response, error) {
-	params := map[string]string{}
-	if opts != nil {
-		opts.Apply(params)
-	}
-	path := sdkutil.AppendQuery(ListURL, params)
-	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var page model.LabelPage
-	resp, err := s.client.Do(ctx, httpReq, &page)
-	if err != nil {
-		return nil, resp, err
-	}
-	if resp != nil {
-		resp.Count = page.Total
-		resp.NextURL = page.NextURL
-		resp.PreviousURL = page.PreviousURL
-	}
-	return page.Results, resp, nil
+	return sdkutil.List[model.Label](ctx, s.client, ListURL, opts)
 }
 
 // Get fetches a label by ID.
 func (s *Service) Get(ctx context.Context, id string) (*model.Label, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(DetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Label
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Label](ctx, s.client, DetailURL, id)
 }
 
 // Create creates a label.
 func (s *Service) Create(ctx context.Context, req *model.LabelRequest) (*model.Label, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", ListURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Label
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.Label, model.LabelRequest](ctx, s.client, ListURL, req)
 }
 
 // Update patches a label.
 func (s *Service) Update(ctx context.Context, id string, req *model.LabelRequest) (*model.Label, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PATCH", sdkutil.Spath(DetailURL, id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Label
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Update[model.Label, model.LabelRequest](ctx, s.client, DetailURL, id, req)
 }
 
 // Delete deletes a label.
 func (s *Service) Delete(ctx context.Context, id string) (*core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "DELETE", sdkutil.Spath(DetailURL, id), nil)
-	if err != nil {
-		return nil, err
-	}
-	return s.client.Do(ctx, httpReq, nil)
+	return sdkutil.Delete(ctx, s.client, DetailURL, id)
 }

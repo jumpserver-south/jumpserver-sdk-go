@@ -5,12 +5,13 @@ import (
 	"fmt"
 
 	"github.com/jumpserver-south/jumpserver-sdk-go/internal/core"
+	"github.com/jumpserver-south/jumpserver-sdk-go/internal/sdkutil"
 	"github.com/jumpserver-south/jumpserver-sdk-go/model"
 )
 
 // authentication URL constants.
 const (
-	TokenURL              = "/api/v1/authentication/auth/"
+	TokenURL              = "/api/v1/authentication/tokens/"
 	TokenConfirmURL       = "/api/v1/authentication/login-confirm-ticket/status/"
 	MFASelectURL          = "/api/v1/authentication/mfa/select/"
 	ConfirmURL            = "/api/v1/authentication/confirm/"
@@ -21,8 +22,7 @@ const (
 )
 
 // Service handles authentication-related endpoints (login, MFA,
-// super-connection-token). It is version-aware: when the client
-// targets JumpServer v3, CreateToken uses the v3 auth endpoint.
+// super-connection-token).
 type Service struct {
 	client core.HTTPClient
 }
@@ -33,18 +33,9 @@ func NewService(c core.HTTPClient) *Service {
 }
 
 // CreateToken performs username/password login and returns a Bearer
-// token suitable for subsequent API calls. On v3 it calls
+// token suitable for subsequent API calls.
 func (s *Service) CreateToken(ctx context.Context, req *model.TokenRequest) (*model.Token, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", TokenURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Token
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.Token, model.TokenRequest](ctx, s.client, TokenURL, req)
 }
 
 // ConfirmLoginStatus polls the login-confirm ticket status.
@@ -81,62 +72,26 @@ func (s *Service) SelectMFA(ctx context.Context, ticketID, mfaType string) (map[
 // CreateConnectionToken creates a connection token for accessing an
 // asset. Requires user, asset, account, protocol, and connect_method.
 func (s *Service) CreateConnectionToken(ctx context.Context, req *model.ConnectionTokenRequest) (*model.ConnectionToken, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", ConnectionTokenURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.ConnectionToken
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.ConnectionToken, model.ConnectionTokenRequest](ctx, s.client, ConnectionTokenURL, req)
 }
 
 // SSOLoginURL returns an SSO login URL for the given user. This is an
 // enterprise-only feature.
 func (s *Service) SSOLoginURL(ctx context.Context, req *model.SSOLoginRequest) (map[string]any, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", SSOLoginURLPath, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	out := map[string]any{}
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return out, resp, nil
+	return sdkutil.MapAction(ctx, s.client, SSOLoginURLPath, req)
 }
 
 // CreateSuperConnectionToken creates a super connection token (requires
 // elevated privileges / API key). Used for SSO-based asset access.
 func (s *Service) CreateSuperConnectionToken(ctx context.Context, req *model.ConnectionTokenRequest) (*model.ConnectionToken, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", SuperConnectionToken, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.ConnectionToken
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.ConnectionToken, model.ConnectionTokenRequest](ctx, s.client, SuperConnectionToken, req)
 }
 
 // GetSuperConnectionTokenSecret retrieves the secret/auth info for a
 // super connection token.
 func (s *Service) GetSuperConnectionTokenSecret(ctx context.Context, tokenID string) (map[string]any, *core.Response, error) {
 	body := map[string]any{"id": tokenID, "expire_now": false}
-	httpReq, err := s.client.NewRequest(ctx, "POST", SuperConnectionSecret, body)
-	if err != nil {
-		return nil, nil, err
-	}
-	out := map[string]any{}
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return out, resp, nil
+	return sdkutil.MapAction(ctx, s.client, SuperConnectionSecret, body)
 }
 
 // GetClientURL returns the client connection URL for a connection token

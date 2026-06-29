@@ -4,8 +4,6 @@ import (
 	"crypto/tls"
 	"net/http"
 	"time"
-
-	"github.com/jumpserver-south/jumpserver-sdk-go/internal/core"
 )
 
 // Option configures a [Client]. Pass any number of options to [NewClient].
@@ -21,7 +19,6 @@ type clientConfig struct {
 	cookies    map[string]string
 	userAgent  string
 	orgID      string
-	version    core.APIVersion
 
 	timeout            time.Duration
 	maxRetries         int
@@ -32,17 +29,6 @@ type clientConfig struct {
 	logger        Logger
 	debugRequests bool
 }
-
-// APIVersion describes which JumpServer major version the client should
-// target. Some endpoints exist only on v4+.
-type APIVersion = core.APIVersion
-
-const (
-	// JumpServerV3 targets JumpServer 3.x.
-	JumpServerV3 = core.JumpServerV3
-	// JumpServerV4 targets JumpServer 4.x (default).
-	JumpServerV4 = core.JumpServerV4
-)
 
 // Logger is a minimal interface satisfied by *log.Logger. Pass any
 // compatible implementation to [WithLogger].
@@ -57,7 +43,6 @@ func defaultConfig() *clientConfig {
 		headers:            map[string]string{},
 		cookies:            map[string]string{},
 		orgID:              "00000000-0000-0000-0000-000000000002",
-		version:            JumpServerV4,
 		timeout:            30 * time.Second,
 		maxRetries:         3,
 		retryMinWait:       500 * time.Millisecond,
@@ -105,13 +90,6 @@ func WithCookie(name, value string) Option {
 // global org, or a specific org ID.
 func WithOrg(id string) Option {
 	return func(c *clientConfig) { c.orgID = id }
-}
-
-// WithVersion pins the client to a specific JumpServer major version.
-// Some service methods consult this value to decide which endpoint to
-// call.
-func WithVersion(v APIVersion) Option {
-	return func(c *clientConfig) { c.version = v }
 }
 
 // WithRetry configures automatic retries. Retries occur on:

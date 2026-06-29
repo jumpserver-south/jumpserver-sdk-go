@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jumpserver-south/jumpserver-sdk-go/internal/core"
+	"github.com/jumpserver-south/jumpserver-sdk-go/internal/sdkutil"
 )
 
 const (
@@ -28,16 +29,7 @@ func NewService(c core.HTTPClient) *Service {
 // Register registers a new terminal component with the server.
 func (s *Service) Register(ctx context.Context, name, typeName, comment string) (map[string]any, *core.Response, error) {
 	body := map[string]string{"name": name, "type": typeName, "comment": comment}
-	httpReq, err := s.client.NewRequest(ctx, "POST", RegisterURL, body)
-	if err != nil {
-		return nil, nil, err
-	}
-	out := map[string]any{}
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return out, resp, nil
+	return sdkutil.MapAction(ctx, s.client, RegisterURL, body)
 }
 
 // Config returns the terminal configuration blob.

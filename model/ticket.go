@@ -29,13 +29,8 @@ type TicketRequest struct {
 	Comment        string   `json:"comment,omitempty"`
 }
 
-// TicketPage is the paginated list envelope.
-type TicketPage struct {
-	Total       int      `json:"count"`
-	NextURL     string   `json:"next"`
-	PreviousURL string   `json:"previous"`
-	Results     []Ticket `json:"results"`
-}
+// TicketPage is the paginated list envelope for Tickets.
+type TicketPage = Page[Ticket]
 
 // TicketFlow is a workflow definition for ticket approval.
 type TicketFlow struct {
@@ -60,10 +55,5 @@ type TicketFlowRequest struct {
 	Comment         string `json:"comment,omitempty"`
 }
 
-// TicketFlowPage is the paginated list envelope.
-type TicketFlowPage struct {
-	Total       int          `json:"count"`
-	NextURL     string       `json:"next"`
-	PreviousURL string       `json:"previous"`
-	Results     []TicketFlow `json:"results"`
-}
+// TicketFlowPage is the paginated list envelope for TicketFlows.
+type TicketFlowPage = Page[TicketFlow]

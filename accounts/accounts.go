@@ -8,7 +8,6 @@ import (
 	"github.com/jumpserver-south/jumpserver-sdk-go/model"
 )
 
-// Account URL constants.
 const (
 	ListURL   = "/api/v1/accounts/accounts/"
 	DetailURL = "/api/v1/accounts/accounts/%s/"
@@ -35,54 +34,17 @@ func NewService(c core.HTTPClient) *Service {
 
 // List returns a paginated list of accounts.
 func (s *Service) List(ctx context.Context, opts *core.ListOptions) ([]model.Account, *core.Response, error) {
-	params := map[string]string{}
-	if opts != nil {
-		opts.Apply(params)
-	}
-	path := sdkutil.AppendQuery(ListURL, params)
-	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var page model.AccountPage
-	resp, err := s.client.Do(ctx, httpReq, &page)
-	if err != nil {
-		return nil, resp, err
-	}
-	if resp != nil {
-		resp.Count = page.Total
-		resp.NextURL = page.NextURL
-		resp.PreviousURL = page.PreviousURL
-	}
-	return page.Results, resp, nil
+	return sdkutil.List[model.Account](ctx, s.client, ListURL, opts)
 }
 
 // Get fetches an account by ID.
 func (s *Service) Get(ctx context.Context, id string) (*model.Account, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(DetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Account
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Account](ctx, s.client, DetailURL, id)
 }
 
 // Create creates an account.
 func (s *Service) Create(ctx context.Context, req *model.AccountRequest) (*model.Account, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", ListURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Account
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.Account, model.AccountRequest](ctx, s.client, ListURL, req)
 }
 
 // CreateBulk adds the same account to many assets in one call.
@@ -105,65 +67,25 @@ func (s *Service) CreateBulkByTemplate(ctx context.Context, req *model.AccountBu
 
 // Update patches an account.
 func (s *Service) Update(ctx context.Context, id string, req *model.AccountRequest) (*model.Account, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PATCH", sdkutil.Spath(DetailURL, id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Account
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Update[model.Account, model.AccountRequest](ctx, s.client, DetailURL, id, req)
 }
 
 // Delete deletes an account.
 func (s *Service) Delete(ctx context.Context, id string) (*core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "DELETE", sdkutil.Spath(DetailURL, id), nil)
-	if err != nil {
-		return nil, err
-	}
-	return s.client.Do(ctx, httpReq, nil)
+	return sdkutil.Delete(ctx, s.client, DetailURL, id)
 }
 
 // GetSecret fetches the decrypted account secret.
 func (s *Service) GetSecret(ctx context.Context, id string) (*model.Account, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(SecretURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Account
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Account](ctx, s.client, SecretURL, id)
 }
 
 // Verify returns the connectivity verification result for an account (v4).
 func (s *Service) Verify(ctx context.Context, id string) (*model.AccountVerifyResult, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(VerifyDetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.AccountVerifyResult
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.AccountVerifyResult](ctx, s.client, VerifyDetailURL, id)
 }
 
 // CreateVerifyTask creates a connectivity verification task (v4).
 func (s *Service) CreateVerifyTask(ctx context.Context, req *model.AccountVerifyTaskRequest) (*model.AccountVerifyTask, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", VerifyTaskURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.AccountVerifyTask
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.AccountVerifyTask, model.AccountVerifyTaskRequest](ctx, s.client, VerifyTaskURL, req)
 }

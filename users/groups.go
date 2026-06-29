@@ -26,77 +26,27 @@ func NewGroupsService(c core.HTTPClient) *GroupsService {
 
 // List returns a paginated list of groups.
 func (s *GroupsService) List(ctx context.Context, opts *core.ListOptions) ([]model.Group, *core.Response, error) {
-	params := map[string]string{}
-	if opts != nil {
-		opts.Apply(params)
-	}
-	path := sdkutil.AppendQuery(GroupListURL, params)
-	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var page model.GroupPage
-	resp, err := s.client.Do(ctx, httpReq, &page)
-	if err != nil {
-		return nil, resp, err
-	}
-	if resp != nil {
-		resp.Count = page.Total
-		resp.NextURL = page.NextURL
-		resp.PreviousURL = page.PreviousURL
-	}
-	return page.Results, resp, nil
+	return sdkutil.List[model.Group](ctx, s.client, GroupListURL, opts)
 }
 
 // Get fetches a group by ID.
 func (s *GroupsService) Get(ctx context.Context, id string) (*model.Group, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(GroupDetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Group
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Group](ctx, s.client, GroupDetailURL, id)
 }
 
 // Create creates a group.
 func (s *GroupsService) Create(ctx context.Context, req *model.GroupRequest) (*model.Group, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", GroupListURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Group
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.Group, model.GroupRequest](ctx, s.client, GroupListURL, req)
 }
 
 // Update patches a group.
 func (s *GroupsService) Update(ctx context.Context, id string, req *model.GroupRequest) (*model.Group, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PATCH", sdkutil.Spath(GroupDetailURL, id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Group
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Update[model.Group, model.GroupRequest](ctx, s.client, GroupDetailURL, id, req)
 }
 
 // Delete deletes a group.
 func (s *GroupsService) Delete(ctx context.Context, id string) (*core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "DELETE", sdkutil.Spath(GroupDetailURL, id), nil)
-	if err != nil {
-		return nil, err
-	}
-	return s.client.Do(ctx, httpReq, nil)
+	return sdkutil.Delete(ctx, s.client, GroupDetailURL, id)
 }
 
 // BindUsers assigns a set of users to a group via the relation endpoint.

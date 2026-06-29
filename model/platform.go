@@ -18,10 +18,5 @@ type Platform struct {
 	DateUpdated string       `json:"date_updated"`
 }
 
-// PlatformPage is the paginated list envelope.
-type PlatformPage struct {
-	Total       int        `json:"count"`
-	NextURL     string     `json:"next"`
-	PreviousURL string     `json:"previous"`
-	Results     []Platform `json:"results"`
-}
+// PlatformPage is the paginated list envelope for Platforms.
+type PlatformPage = Page[Platform]

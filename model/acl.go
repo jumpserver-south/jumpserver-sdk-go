@@ -38,13 +38,8 @@ type CommandFilterRequest struct {
 	Comment       string `json:"comment,omitempty"`
 }
 
-// CommandFilterPage is the paginated list envelope.
-type CommandFilterPage struct {
-	Total       int             `json:"count"`
-	NextURL     string          `json:"next"`
-	PreviousURL string          `json:"previous"`
-	Results     []CommandFilter `json:"results"`
-}
+// CommandFilterPage is the paginated list envelope for CommandFilters.
+type CommandFilterPage = Page[CommandFilter]
 
 // CommandGroup is a group of command regexes used by a CommandFilter.
 type CommandGroup struct {
@@ -67,13 +62,8 @@ type CommandGroupRequest struct {
 	Comment string `json:"comment,omitempty"`
 }
 
-// CommandGroupPage is the paginated list envelope.
-type CommandGroupPage struct {
-	Total       int            `json:"count"`
-	NextURL     string         `json:"next"`
-	PreviousURL string         `json:"previous"`
-	Results     []CommandGroup `json:"results"`
-}
+// CommandGroupPage is the paginated list envelope for CommandGroups.
+type CommandGroupPage = Page[CommandGroup]
 
 // LoginACL restricts login attempts by time/IP.
 type LoginACL struct {
@@ -87,10 +77,5 @@ type LoginACL struct {
 	DateUpdated string     `json:"date_updated"`
 }
 
-// LoginACLPage is the paginated list envelope.
-type LoginACLPage struct {
-	Total       int        `json:"count"`
-	NextURL     string     `json:"next"`
-	PreviousURL string     `json:"previous"`
-	Results     []LoginACL `json:"results"`
-}
+// LoginACLPage is the paginated list envelope for LoginACLs.
+type LoginACLPage = Page[LoginACL]

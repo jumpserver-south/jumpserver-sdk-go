@@ -50,7 +50,6 @@ func main() {
 	client := jumpserver.NewClient(
 		jumpserver.WithBaseURL(baseURL),
 		jumpserver.WithAccessKeyAuth(keyID, secretID),
-		jumpserver.WithVersion(jumpserver.JumpServerV4),
 	)
 	ctx := context.Background()
 

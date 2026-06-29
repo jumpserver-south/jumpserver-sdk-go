@@ -26,77 +26,27 @@ func NewService(c core.HTTPClient) *Service {
 
 // List returns a paginated list of asset permissions.
 func (s *Service) List(ctx context.Context, opts *core.ListOptions) ([]model.AssetPermission, *core.Response, error) {
-	params := map[string]string{}
-	if opts != nil {
-		opts.Apply(params)
-	}
-	path := sdkutil.AppendQuery(AssetPermissionListURL, params)
-	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var page model.AssetPermissionPage
-	resp, err := s.client.Do(ctx, httpReq, &page)
-	if err != nil {
-		return nil, resp, err
-	}
-	if resp != nil {
-		resp.Count = page.Total
-		resp.NextURL = page.NextURL
-		resp.PreviousURL = page.PreviousURL
-	}
-	return page.Results, resp, nil
+	return sdkutil.List[model.AssetPermission](ctx, s.client, AssetPermissionListURL, opts)
 }
 
 // Get fetches an asset permission by ID.
 func (s *Service) Get(ctx context.Context, id string) (*model.AssetPermission, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(AssetPermissionDetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.AssetPermission
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.AssetPermission](ctx, s.client, AssetPermissionDetailURL, id)
 }
 
 // Create creates an asset permission.
 func (s *Service) Create(ctx context.Context, req *model.AssetPermissionRequest) (*model.AssetPermission, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", AssetPermissionListURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.AssetPermission
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.AssetPermission, model.AssetPermissionRequest](ctx, s.client, AssetPermissionListURL, req)
 }
 
 // Update patches an asset permission.
 func (s *Service) Update(ctx context.Context, id string, req *model.AssetPermissionRequest) (*model.AssetPermission, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PATCH", sdkutil.Spath(AssetPermissionDetailURL, id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.AssetPermission
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Update[model.AssetPermission, model.AssetPermissionRequest](ctx, s.client, AssetPermissionDetailURL, id, req)
 }
 
 // Delete deletes an asset permission.
 func (s *Service) Delete(ctx context.Context, id string) (*core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "DELETE", sdkutil.Spath(AssetPermissionDetailURL, id), nil)
-	if err != nil {
-		return nil, err
-	}
-	return s.client.Do(ctx, httpReq, nil)
+	return sdkutil.Delete(ctx, s.client, AssetPermissionDetailURL, id)
 }
 
 // GetSelfAssetAccounts returns the accounts available to the current

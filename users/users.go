@@ -61,16 +61,7 @@ func (s *Service) List(ctx context.Context, filters map[string]string, opts *cor
 
 // Get fetches a user by ID.
 func (s *Service) Get(ctx context.Context, id string) (*model.User, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(DetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.User
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.User](ctx, s.client, DetailURL, id)
 }
 
 // Profile fetches the currently-authenticated user.
@@ -89,53 +80,22 @@ func (s *Service) Profile(ctx context.Context) (*model.User, *core.Response, err
 
 // Create creates a new user.
 func (s *Service) Create(ctx context.Context, req *model.UserRequest) (*model.User, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "POST", ListURL, req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.User
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Create[model.User, model.UserRequest](ctx, s.client, ListURL, req)
 }
 
 // Update patches a user.
 func (s *Service) Update(ctx context.Context, id string, req *model.UserRequest) (*model.User, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PATCH", sdkutil.Spath(DetailURL, id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.User
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Update[model.User, model.UserRequest](ctx, s.client, DetailURL, id, req)
 }
 
 // Replace replaces a user.
 func (s *Service) Replace(ctx context.Context, id string, req *model.UserRequest) (*model.User, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "PUT", sdkutil.Spath(DetailURL, id), req)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.User
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Replace[model.User, model.UserRequest](ctx, s.client, DetailURL, id, req)
 }
 
 // Delete deletes a user.
 func (s *Service) Delete(ctx context.Context, id string) (*core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "DELETE", sdkutil.Spath(DetailURL, id), nil)
-	if err != nil {
-		return nil, err
-	}
-	return s.client.Do(ctx, httpReq, nil)
+	return sdkutil.Delete(ctx, s.client, DetailURL, id)
 }
 
 // Invite invites existing users into the current organization.

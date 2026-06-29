@@ -70,10 +70,8 @@ func (s *CategoryService) Get(ctx context.Context, id string) (*model.Asset, *co
 	return &out, resp, nil
 }
 
-// Create creates a category-scoped asset. On v4 the request's Domain
-// field is automatically mapped to Zone; on v3 Zone is mapped to Domain.
+// Create creates a category-scoped asset.
 func (s *CategoryService) Create(ctx context.Context, req *model.AssetRequest) (*model.Asset, *core.Response, error) {
-	normalizeAssetRequest(s.client.Version(), req)
 	url := sdkutil.Spath(AssetCategoryListURL, s.category)
 	httpReq, err := s.client.NewRequest(ctx, "POST", url, req)
 	if err != nil {
@@ -87,10 +85,8 @@ func (s *CategoryService) Create(ctx context.Context, req *model.AssetRequest) (
 	return &out, resp, nil
 }
 
-// Update patches a category-scoped asset. On v4 the request's Domain
-// field is automatically mapped to Zone; on v3 Zone is mapped to Domain.
+// Update patches a category-scoped asset.
 func (s *CategoryService) Update(ctx context.Context, id string, req *model.AssetRequest) (*model.Asset, *core.Response, error) {
-	normalizeAssetRequest(s.client.Version(), req)
 	url := sdkutil.Spath(AssetCategoryDetailURL, s.category, id)
 	httpReq, err := s.client.NewRequest(ctx, "PATCH", url, req)
 	if err != nil {
@@ -104,10 +100,8 @@ func (s *CategoryService) Update(ctx context.Context, id string, req *model.Asse
 	return &out, resp, nil
 }
 
-// Replace replaces a category-scoped asset. On v4 the request's Domain
-// field is automatically mapped to Zone; on v3 Zone is mapped to Domain.
+// Replace replaces a category-scoped asset.
 func (s *CategoryService) Replace(ctx context.Context, id string, req *model.AssetRequest) (*model.Asset, *core.Response, error) {
-	normalizeAssetRequest(s.client.Version(), req)
 	url := sdkutil.Spath(AssetCategoryDetailURL, s.category, id)
 	httpReq, err := s.client.NewRequest(ctx, "PUT", url, req)
 	if err != nil {
@@ -129,22 +123,4 @@ func (s *CategoryService) Delete(ctx context.Context, id string) (*core.Response
 		return nil, err
 	}
 	return s.client.Do(ctx, httpReq, nil)
-}
-
-// normalizeAssetRequest maps the domain/zone fields based on the API
-// version: v3 uses "domain", v4 uses "zone". It copies whichever field
-// the caller set into the version-appropriate field and clears the
-// other to avoid sending conflicting values.
-func normalizeAssetRequest(version string, req *model.AssetRequest) {
-	if version == string(core.JumpServerV4) {
-		if req.Domain != "" && req.Zone == "" {
-			req.Zone = req.Domain
-		}
-		req.Domain = ""
-	} else {
-		if req.Zone != "" && req.Domain == "" {
-			req.Domain = req.Zone
-		}
-		req.Zone = ""
-	}
 }

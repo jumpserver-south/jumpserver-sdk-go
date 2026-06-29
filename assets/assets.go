@@ -58,25 +58,12 @@ func (s *AssetsService) List(ctx context.Context, filters map[string]string, opt
 
 // Get fetches an asset by ID.
 func (s *AssetsService) Get(ctx context.Context, id string) (*model.Asset, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(AssetDetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Asset
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Asset](ctx, s.client, AssetDetailURL, id)
 }
 
 // Delete deletes an asset by ID.
 func (s *AssetsService) Delete(ctx context.Context, id string) (*core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "DELETE", sdkutil.Spath(AssetDetailURL, id), nil)
-	if err != nil {
-		return nil, err
-	}
-	return s.client.Do(ctx, httpReq, nil)
+	return sdkutil.Delete(ctx, s.client, AssetDetailURL, id)
 }
 
 // PermUsers returns the users permitted to access an asset.

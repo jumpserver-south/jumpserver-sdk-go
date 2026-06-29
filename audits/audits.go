@@ -28,40 +28,12 @@ func NewService(c core.HTTPClient) *Service {
 
 // ListSessions returns a paginated list of sessions.
 func (s *Service) ListSessions(ctx context.Context, opts *core.ListOptions) ([]model.Session, *core.Response, error) {
-	params := map[string]string{}
-	if opts != nil {
-		opts.Apply(params)
-	}
-	path := sdkutil.AppendQuery(SessionListURL, params)
-	httpReq, err := s.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var page model.SessionPage
-	resp, err := s.client.Do(ctx, httpReq, &page)
-	if err != nil {
-		return nil, resp, err
-	}
-	if resp != nil {
-		resp.Count = page.Total
-		resp.NextURL = page.NextURL
-		resp.PreviousURL = page.PreviousURL
-	}
-	return page.Results, resp, nil
+	return sdkutil.List[model.Session](ctx, s.client, SessionListURL, opts)
 }
 
 // GetSession fetches a session by ID.
 func (s *Service) GetSession(ctx context.Context, id string) (*model.Session, *core.Response, error) {
-	httpReq, err := s.client.NewRequest(ctx, "GET", sdkutil.Spath(SessionDetailURL, id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	var out model.Session
-	resp, err := s.client.Do(ctx, httpReq, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-	return &out, resp, nil
+	return sdkutil.Get[model.Session](ctx, s.client, SessionDetailURL, id)
 }
 
 // DownloadReplay streams the session replay archive into w.
